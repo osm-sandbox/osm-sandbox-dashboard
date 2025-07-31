@@ -1,6 +1,6 @@
 charts:
   - name: dashboard-charts
-    imagePrefix: ghcr.io/osmus/osm-sandbox-
+    imagePrefix: ghcr.io/osm-sandbox/osm-sandbox-
     images:
       dashboard:
         valuesPath: dashboard.image
