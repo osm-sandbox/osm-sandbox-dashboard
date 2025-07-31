@@ -56,7 +56,7 @@ def replace_placeholders_and_save(box_name, label_value, seed_data_file_url):
 
 
 async def create_upgrade_box(box_name, namespace, values_file):
-    """Creata or upgrade box"""
+    """Create or upgrade box"""
     command = [
         "helm",
         "upgrade",

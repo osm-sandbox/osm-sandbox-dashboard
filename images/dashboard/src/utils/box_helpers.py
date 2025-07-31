@@ -20,7 +20,7 @@ def is_box_running(db: Session, box_name: str) -> bool:
 
 
 async def check_release_status(namespace: str, box_id: int, db: Session):
-    logging.info(f"Start state checcker job for box ID {box_id}")
+    logging.info(f"Start state checker job for box ID {box_id}")
 
     end_time = datetime.utcnow() + timedelta(minutes=5)
 

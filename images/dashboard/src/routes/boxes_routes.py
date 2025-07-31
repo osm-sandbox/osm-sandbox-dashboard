@@ -31,7 +31,7 @@ namespace = "default"
     "/boxes",
     tags=["Boxes"],
     response_model=BoxResponse,
-    description="Create a box in the database and release a sack in the Kubernetes cluster.",
+    description="Create and launch a new sandbox",
     dependencies=[Depends(verify_token)],
 )
 async def create_box(
