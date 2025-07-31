@@ -1,6 +1,7 @@
 FROM python:3.9
+ARG TARGETARCH
 ARG KUBECTL_VERSION=v1.30.1
-RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl \
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl \
     && chmod +x kubectl \
     && mv kubectl /usr/local/bin/
 RUN kubectl version --client
