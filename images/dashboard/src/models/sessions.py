@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime
+from sqlalchemy import Column, String, DateTime, Text
 from database import Base
 from datetime import datetime
 
@@ -10,3 +10,5 @@ class Sessions(Base):
     user = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     end_redirect_uri = Column(String, nullable=True)
+    sandbox_oauth_token = Column(Text, nullable=True)
+    sandbox_token_expires_at = Column(DateTime, nullable=True)

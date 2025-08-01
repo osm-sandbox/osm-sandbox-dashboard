@@ -1,6 +1,7 @@
 fastapi
 uvicorn
 jinja2
+requests
 requests_oauthlib
 psycopg2
 argon2

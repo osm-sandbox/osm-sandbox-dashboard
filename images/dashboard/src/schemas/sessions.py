@@ -12,3 +12,9 @@ class SessionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class SandboxTokenResponse(BaseModel):
+    access_token: str
+    expires_in: Optional[int] = None
+    sandbox_api_url: str
