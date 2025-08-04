@@ -45,6 +45,6 @@ data:
     SANDBOX_WEBSITE_STATUS: {{ .Values.dashboard.env.SANDBOX_WEBSITE_STATUS | quote }}
     SANDBOX_BACKUP_FILE_URL: {{ .Values.dashboard.env.SANDBOX_BACKUP_FILE_URL | quote }}
     SANDBOX_TM_OAUTH_CLIENT_ID: {{ .Values.dashboard.env.SANDBOX_TM_OAUTH_CLIENT_ID | quote }}
-    SANDBOX_TM_OAUTH_CLIENT_SECRET_HASHED: {{ .Values.dashboard.env.SANDBOX_TM_OAUTH_CLIENT_SECRET_HASHED | quote }}
+    SANDBOX_TM_OAUTH_CLIENT_SECRET: {{ .Values.dashboard.env.SANDBOX_TM_OAUTH_CLIENT_SECRET | quote }}
 
 {{- end }}
