@@ -206,6 +206,8 @@ async def delete_box(
             "result": result,
             "box": box_response,
         }
+    except HTTPException:
+        raise  # Re-raise HTTPExceptions without modification
     except Exception as e:
         logging.error(f"Error deleting box {box_name}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
