@@ -11,7 +11,7 @@ from requests_oauthlib import OAuth2Session
 from models.sessions import Sessions
 from datetime import datetime, timedelta, timezone
 
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
 
 # Import database utils
 from database import get_db
@@ -169,8 +169,12 @@ async def redirect_sandbox(request: Request, code: str, state: str = None, db: S
 
             # Redirect to TM callback URL instead of sandbox login
             if session.end_redirect_uri:
-                # Replace {{session_id}} placeholder if present
-                end_redirect_uri = session.end_redirect_uri.replace('{{session_id}}', session_id)
+                # Append session_id parameter to callback URL
+                url = urlparse(session.end_redirect_uri)
+                query_params = parse_qsl(url.query, keep_blank_values=True)
+                query_params.append(('session_id', session_id))
+                new_query = urlencode(query_params)
+                end_redirect_uri = urlunparse((url.scheme, url.netloc, url.path, url.params, new_query, url.fragment))
                 logging.info(f"Redirecting to TM callback for session: {session_id}")
                 return RedirectResponse(url=end_redirect_uri)
             else:
