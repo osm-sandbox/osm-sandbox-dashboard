@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse, RedirectResponse
 from requests_oauthlib import OAuth2Session
 from models.sessions import Sessions
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from urllib.parse import urlparse
 
@@ -71,7 +71,7 @@ def create_session(request: Request, box: str = Query(...), end_redirect_uri: st
         )
 
     session_id = str(uuid.uuid4())
-    new_session = Sessions(id=session_id, box=box, end_redirect_uri=end_redirect_uri, created_at=datetime.utcnow())
+    new_session = Sessions(id=session_id, box=box, end_redirect_uri=end_redirect_uri, created_at=datetime.now(timezone.utc))
     db.add(new_session)
     db.commit()
     db.refresh(new_session)
@@ -153,7 +153,7 @@ async def redirect_sandbox(request: Request, code: str, state: str = None, db: S
                     sandbox_token_data = response.json()
                     sandbox_access_token = sandbox_token_data.get('access_token')
                     expires_in = sandbox_token_data.get('expires_in', 3600)  # Default 1 hour
-                    expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+                    expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
                     
                     # Store sandbox token in session
                     session.sandbox_oauth_token = sandbox_access_token
@@ -202,7 +202,7 @@ def get_session(session_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Sandbox token not found")
     
     # Check if token has expired
-    if session.sandbox_token_expires_at and session.sandbox_token_expires_at < datetime.utcnow():
+    if session.sandbox_token_expires_at and session.sandbox_token_expires_at < datetime.now(timezone.utc):
         logging.error(f"Sandbox token expired for session: {session_id}")
         # Clean up expired token
         db.delete(session)
@@ -213,7 +213,7 @@ def get_session(session_id: str, db: Session = Depends(get_db)):
     sandbox_api_url = f"https://api.{session.box}.boxes.osmsandbox.us"
     expires_in = None
     if session.sandbox_token_expires_at:
-        expires_in = int((session.sandbox_token_expires_at - datetime.utcnow()).total_seconds())
+        expires_in = int((session.sandbox_token_expires_at - datetime.now(timezone.utc)).total_seconds())
     
     token_response = SandboxTokenResponse(
         access_token=session.sandbox_oauth_token,
