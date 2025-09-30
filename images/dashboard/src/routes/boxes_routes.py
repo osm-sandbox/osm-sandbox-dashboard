@@ -213,6 +213,74 @@ async def delete_box(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post(
+    "/boxes/{box_name}/upgrade",
+    tags=["Boxes"],
+    response_model=BoxResponse,
+    description="Upgrade an existing box with the latest helm chart.",
+    dependencies=[Depends(verify_token)],
+)
+async def upgrade_box(
+    box_name: str, db: Session = Depends(get_db), token: TokenData = Depends(verify_token)
+):
+    try:
+        logging.info(f"Attempting to upgrade box with name: {box_name}.")
+
+        db_box = (
+            db.query(Boxes)
+            .filter(Boxes.name == box_name, Boxes.state != StateEnum.terminated)
+            .order_by(desc(Boxes.id))
+            .first()
+        )
+
+        if not db_box:
+            logging.warning(f"Box with name {box_name} not found or already terminated.")
+            raise HTTPException(status_code=404, detail="Box not found or already terminated")
+
+        if "creator" in token.roles and db_box.owner != token.username:
+            logging.warning(f"User {token.username} is not allowed to upgrade box {box_name}.")
+            raise HTTPException(status_code=403, detail="You are not allowed to upgrade this box")
+
+        # Regenerate values file from existing box values. Note: the resulting
+        # values_file should be identical to the one we generated when the
+        # box was created (none of the parameters are allowed to be changed
+        # later); I'm only regenerating it to make sure the file exists, since
+        # I'm not sure whether the dashboard's filesystem is persistent across
+        # deployments.
+        values_file = replace_placeholders_and_save(
+            db_box.name, db_box.resource_label, db_box.seed_data_file_url
+        )
+
+        # Upgrade the box. Note: this runs `helm upgrade --install` which
+        # technically can create a new sandbox if it doesn't already exist;
+        # however the sandbox _should_ exist since we have an entry for it in
+        # the database (see db_box above) and if it doesn't, we should probably
+        # create it, right?
+        output, deploy_date, state = await create_upgrade_box(box_name, namespace, values_file)
+        logging.info(f"Upgrade box output: {output}")
+
+        if state == "Failure":
+            logging.error(f"Upgrade failed: {output}")
+            raise HTTPException(status_code=500, detail="Upgrade failed: " + output)
+
+        # Update box state to pending
+        db_box.state = StateEnum[state]
+        db.commit()
+        db.refresh(db_box)
+
+        # Start an async job to check the deployment
+        asyncio.create_task(check_release_status(namespace, db_box.id, db))
+
+        logging.info(f"Box {box_name} upgraded successfully.")
+        return BoxResponse.from_orm(db_box)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error upgrading box {box_name}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get(
     "/boxes_history",
     tags=["Boxes"],
