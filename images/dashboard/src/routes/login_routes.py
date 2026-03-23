@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse, RedirectResponse
+from oauthlib.oauth2.rfc6749.errors import MissingTokenError
 from requests_oauthlib import OAuth2Session
 from models.sessions import Sessions
 from datetime import datetime, timedelta, timezone
@@ -182,8 +183,11 @@ async def redirect_sandbox(request: Request, code: str, state: str = None, db: S
         else:
             logging.error("State parameter not found")
             raise HTTPException(status_code=400, detail="Missing state parameter")
-    except Exception as e:
-        logging.error(f"An error occurred: {e}")
+    except MissingTokenError as e:
+        logging.error(f"Token exchange failed: {e.description} | Response body: {e.response}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    except Exception:
+        logging.exception("An error occurred during sandbox redirect")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
