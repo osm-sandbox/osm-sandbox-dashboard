@@ -38,9 +38,6 @@ router = APIRouter()
 
 domain = os.getenv("SANDBOX_DOMAIN")
 
-oauth = OAuth2Session(client_id=client_id, redirect_uri=redirect_uri, scope=osm_instance_scopes)
-
-
 # Custom static files to set cache control
 class CustomStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope):
@@ -112,10 +109,10 @@ async def redirect_sandbox(request: Request, code: str, state: str = None, db: S
 
     try:
         # Get user data
-        token = oauth.fetch_token(
+        oauth = OAuth2Session(client_id=client_id, redirect_uri=redirect_uri, scope=osm_instance_scopes)
+        oauth.fetch_token(
             f"{osm_instance_url}/oauth2/token", code=code, client_secret=client_secret
         )
-        oauth.token = token
         user_details_response = oauth.get(f"{osm_instance_url}/api/0.6/user/details.json")
         user_details = user_details_response.json()
         display_name = user_details.get("user").get("display_name")
