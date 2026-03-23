@@ -111,6 +111,7 @@ async def redirect_sandbox(request: Request, code: str, state: str = None, db: S
     try:
         # Get user data
         oauth = OAuth2Session(client_id=client_id, redirect_uri=redirect_uri, scope=osm_instance_scopes)
+        oauth.register_compliance_hook("access_token_response", lambda r: (logging.info(f"Token endpoint response: {r.status_code} {r.text}"), r)[1])
         oauth.fetch_token(
             f"{osm_instance_url}/oauth2/token", code=code, client_secret=client_secret
         )
@@ -184,7 +185,7 @@ async def redirect_sandbox(request: Request, code: str, state: str = None, db: S
             logging.error("State parameter not found")
             raise HTTPException(status_code=400, detail="Missing state parameter")
     except MissingTokenError as e:
-        logging.error(f"Token exchange failed: {e.description} | Response body: {e.response}")
+        logging.error(f"Token exchange failed: {e.description}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
     except Exception:
         logging.exception("An error occurred during sandbox redirect")
