@@ -41,11 +41,6 @@ sandbox_domain = os.getenv("SANDBOX_DOMAIN", "yoursandboxdomain.here")
 # At the top of the file, add:
 osm_user_agent = os.getenv("OSM_USER_AGENT", "HOT-TaskingManager-API/5.0 (https://tasking-manager-production-api.hotosm.org)")
 
-# Update the module-level oauth (or per-request if you go that route):
-oauth = OAuth2Session(client_id=client_id, redirect_uri=redirect_uri, scope=osm_instance_scopes)
-oauth.headers.update({"User-Agent": osm_user_agent})
-
-
 # Custom static files to set cache control
 class CustomStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope):
@@ -117,16 +112,20 @@ async def redirect_sandbox(request: Request, code: str, state: str = None, db: S
 
     try:
         # Get user data
-        token = oauth.fetch_token(
-            f"{osm_instance_url}/oauth2/token",
-            code=code,
-            client_secret=client_secret,
-            headers={"User-Agent": osm_user_agent}  # explicitly pass on fetch too
+        request_oauth = OAuth2Session(
+            client_id=client_id,
+            redirect_uri=redirect_uri,
+            scope=osm_instance_scopes
         )
-        oauth.token = token
-        user_details_response = oauth.get(
+        request_oauth.headers.update({"User-Agent": osm_user_agent})
+
+        token = request_oauth.fetch_token(
+            f"{osm_instance_url}/oauth2/token", code=code, client_secret=client_secret
+        )
+        request_oauth.token = token
+        user_details_response = request_oauth.get(
             f"{osm_instance_url}/api/0.6/user/details.json",
-            headers={"User-Agent": osm_user_agent}  # explicitly pass on get too
+            headers={"User-Agent": osm_user_agent}
         )
         user_details = user_details_response.json()
         display_name = user_details.get("user", {}).get("display_name")
