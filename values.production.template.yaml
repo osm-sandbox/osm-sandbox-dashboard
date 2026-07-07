@@ -3,7 +3,6 @@ serviceType: ClusterIP
 adminEmail: admin@osmsandbox.us
 
 ssl_certificate:
-  create_cluster_issuer: false
   create_cert: false
 
 service_account:
