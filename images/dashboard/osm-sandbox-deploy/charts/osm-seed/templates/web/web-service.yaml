@@ -19,7 +19,7 @@ metadata:
     {{- end }}
     {{- if eq .Values.serviceType "ClusterIP" }}
     kubernetes.io/ingress.class: nginx
-    cert-manager.io/cluster-issuer: letsencrypt-prod-issuer
+    cert-manager.io/cluster-issuer: letsencrypt-prod
     {{- else }}
     fake.annotation: fake
     {{- end }}

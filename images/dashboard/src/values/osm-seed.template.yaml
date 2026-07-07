@@ -4,7 +4,6 @@ osm-seed:
   AWS_S3_BUCKET: s3://osmsandbox
   AWS_SSL_ARN: 'none'
   serviceType: ClusterIP
-  createClusterIssuer: false
   domain: {{BOX_NAME}}.{{SANDBOX_DOMAIN}}
   adminEmail: osm-sandbox-admins@googlegroups.com
   db:
