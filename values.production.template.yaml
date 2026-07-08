@@ -47,6 +47,8 @@ dashboard:
     tag: eks
   enabled: true
   ingressDomain: dashboard.osmsandbox.us
+  strategy:
+    type: Recreate
   persistenceDisk:
     enabled: true
     mountPath: /app/values/applied

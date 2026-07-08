@@ -11,6 +11,10 @@ metadata:
     release: {{ .Release.Name }}
 spec:
   replicas: 1
+  {{- with .Values.dashboard.strategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   selector:
     matchLabels:
       app: {{ template "osm-sandbox.name" . }}
